@@ -1,20 +1,20 @@
 # QuickPopDataStructures And QuickPushDataStructures
 
 
-# Description: 
+## Description: 
 QuickPopDataStructures and QuickPushDataStructures is a thread-safe data structures that allows you to add elements and pop the highest element. It uses a doubly-linked list to store elements and a comparator to compare them. This class is useful when you need to quickly retrieve the highest element in a collection.
 
 
-### QuickPopDataStructures
+#### QuickPopDataStructures
 - Time complexity Push: O(n)
 - Time complexity Pop: O(1)
 
-### QuickPopDataStructures
+#### QuickPopDataStructures
 - Time complexity Push: O(1)
 - Time complexity Pop: O(n)
 
 
-# Usage
+## Usage
 To use the QuickPopDataStructures class, first create an instance with a comparator:
 
 

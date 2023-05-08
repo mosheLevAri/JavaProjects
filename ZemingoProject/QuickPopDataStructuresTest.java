@@ -11,8 +11,7 @@ class QuickPopDataStructuresTest {
     QuickPushDataStructures<Person> queue2 = null;
 
     @Test
-    void push()
-    {
+    void push() throws InterruptedException {
         queue1 = new QuickPopDataStructures<>(new PersonComparator());
 
         queue1.push(new Person("shani", 31));
@@ -36,7 +35,7 @@ class QuickPopDataStructuresTest {
     }
 
     @Test
-    void iterator() {
+    void iterator() throws InterruptedException {
         queue2 = new QuickPushDataStructures<>(new PersonComparator());
 
         queue2.push(new Person("shani", 31));

@@ -2,43 +2,43 @@ package il.co.lird.FS133.Projects.ZemingoProject;
 
 import java.util.Comparator;
 import java.util.Objects;
+import java.util.concurrent.Semaphore;
 
 public class QuickPushDataStructures<T> {
 
     private Node head = null;
-    private final Comparator<? super T> comparator;
-    private final Object lock = new Object();
+    private final Comparator<T> comparator;
+    private final Object lockPop = new Object();
+    private final Object lockPush = new Object();
+    private final Semaphore semaphore = new Semaphore(0);
 
-    public QuickPushDataStructures(Comparator<? super T> comparator) {
+    public QuickPushDataStructures(Comparator<T> comparator) {
         this.comparator = Objects.requireNonNull(comparator);
     }
 
     public void push(T element) {
-
         Node newNode = new Node(element);
 
-        synchronized (lock) {
+        synchronized (lockPush) {
             if (head == null) {
                 head = newNode;
-                return;
+            }
+            else
+            {
+                newNode.next = head;
+                head.prev = newNode;
+                head = newNode;
             }
 
-            newNode.next = head;
-            head.prev = newNode;
-            head = newNode;
+            semaphore.release();
         }
     }
 
-    public T pop() {
-
+    public T pop() throws InterruptedException {
         T returnValue = null;
 
-        if (null == head) {
-            throw new NullPointerException(" elements NOT exist");
-        }
-
-        synchronized (lock) {
-
+        semaphore.acquire();
+        synchronized (lockPop) {
             Node max = findMaxValue();
             returnValue = max.data;
             removeNodeFromList(max);

@@ -4,15 +4,19 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.concurrent.Semaphore;
 
 public class QuickPopDataStructures<T> implements Iterable<T> {
 
     private Node head = null;
     private Node tail = null;
-    private final Comparator<? super T> comparator;
-    private final Object lock = new Object();
+    private final Comparator<T> comparator;
+    private final Object lockPop = new Object();
+    private final Object lockPush = new Object();
 
-    public QuickPopDataStructures(Comparator<? super T> comparator) {
+    private final Semaphore semaphore = new Semaphore(0);
+
+    public QuickPopDataStructures(Comparator<T> comparator) {
         this.comparator = Objects.requireNonNull(comparator);
     }
 
@@ -22,7 +26,8 @@ public class QuickPopDataStructures<T> implements Iterable<T> {
         IteratorImplemention iter = new IteratorImplemention();
         boolean isFound = false;
 
-        synchronized (lock) {
+        synchronized (lockPush) {
+
 
             if (head == null) {
                 head = tail = newNode;
@@ -44,17 +49,16 @@ public class QuickPopDataStructures<T> implements Iterable<T> {
 
                 newNode = tail;
             }
+            semaphore.release();
         }
     }
 
-    public T pop() {
+    public T pop() throws InterruptedException {
         T returnValue = null;
 
-        synchronized (lock) {
-            if (null == head) {
-                throw new NullPointerException("");
-            }
+        semaphore.acquire();
 
+        synchronized (lockPop) {
             returnValue = head.data;
 
             if (null != head.next) {
@@ -68,9 +72,7 @@ public class QuickPopDataStructures<T> implements Iterable<T> {
 
     @Override
     public Iterator<T> iterator() {
-        synchronized (lock) {
-            return new IteratorImplemention();
-        }
+        return new IteratorImplemention();
     }
 
     private class Node {

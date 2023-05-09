@@ -4,6 +4,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.concurrent.Semaphore;
 
 public class QuickPopDataStructures<T> implements Iterable<T>, IQuickDataStructers<T> {
 
@@ -11,6 +12,7 @@ public class QuickPopDataStructures<T> implements Iterable<T>, IQuickDataStructe
     private Node tail = null;
     private final Comparator<T> comparator;
     private final Object lock = new Object();
+    private final Semaphore semaphore = new Semaphore(0);
 
     public QuickPopDataStructures(Comparator<T> comparator) {
         this.comparator = Objects.requireNonNull(comparator);
@@ -46,6 +48,8 @@ public class QuickPopDataStructures<T> implements Iterable<T>, IQuickDataStructe
 
                 newNode = tail;
             }
+
+            semaphore.release();
         }
     }
 
@@ -53,9 +57,18 @@ public class QuickPopDataStructures<T> implements Iterable<T>, IQuickDataStructe
     public T pop() {
         T returnValue = null;
 
+        try {
+            semaphore.acquire();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         synchronized (lock) {
             returnValue = head.data;
+
+            if (head == null) {
+                throw new NoSuchElementException();
+            }
 
             if (null != head.next) {
                 head = head.next;

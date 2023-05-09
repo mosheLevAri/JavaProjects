@@ -37,6 +37,11 @@ public class QuickPushDataStructures<T> implements Iterable<T>, IQuickDataStruct
         T returnValue = null;
 
         synchronized (lock) {
+
+            if (head == null) {
+                throw new NoSuchElementException();
+            }
+
             Node max = findMaxValue();
             returnValue = max.data;
             removeNodeFromList(max);

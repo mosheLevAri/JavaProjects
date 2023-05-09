@@ -3,52 +3,89 @@ package il.co.lird.FS133.Projects.ZemingoProject;
 import org.junit.jupiter.api.Test;
 
 import java.util.Comparator;
-import java.util.Iterator;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class QuickPopDataStructuresTest {
 
-    QuickPopDataStructures<Person> queue1 = null;
-    QuickPushDataStructures<Person> queue2 = null;
 
     @Test
-    void push() throws InterruptedException {
-        queue1 = new QuickPopDataStructures<>(new PersonComparator());
+    void pushAndPop() throws InterruptedException {
+        QuickPopDataStructures<Person> popQueue = new QuickPopDataStructures<>(new PersonComparator());
+        QuickPushDataStructures<Person> pushQueue = new QuickPushDataStructures<>(new PersonComparator());
 
-        queue1.push(new Person("shani", 31));
-        queue1.push(new Person("moshe", 27));
-        queue1.push(new Person("lin", 29));
+        pushQueue.push(new Person("Alice", 25));
+        pushQueue.push(new Person("Bob", 30));
+        pushQueue.push(new Person("Charlie", 20));
 
-        Iterator<Person> iter = queue1.iterator();
+        assertEquals(30, pushQueue.pop().age);
+        assertEquals(25, pushQueue.pop().age);
+        assertEquals(20, pushQueue.pop().age);
 
-        while (iter.hasNext())
-        {
-            System.out.println(iter.next().age);
-        }
 
-        queue1.pop();
-
-        iter = queue1.iterator();
-        while (iter.hasNext())
-        {
-            System.out.println(iter.next().age);
-        }
     }
 
     @Test
-    void iterator() throws InterruptedException {
-        queue2 = new QuickPushDataStructures<>(new PersonComparator());
+    void pushAndPopConcurrently() throws InterruptedException {
+        final QuickPopDataStructures<Person> popQueue = new QuickPopDataStructures<>(new PersonComparator());
+        final QuickPushDataStructures<Person> pushQueue = new QuickPushDataStructures<>(new PersonComparator());
+        final ExecutorService executor = Executors.newFixedThreadPool(2);
 
-        queue2.push(new Person("shani", 31));
-        queue2.push(new Person("moshe", 27));
-        queue2.push(new Person("lin", 29));
+        executor.execute(() -> {
+            pushQueue.push(new Person("Alice", 25));
+            pushQueue.push(new Person("Bob", 30));
+            pushQueue.push(new Person("Charlie", 20));
+        });
 
+        executor.execute(() -> {
+            assertEquals(new Person("Charlie", 20), popQueue.pop());
+            assertEquals(new Person("Alice", 25), popQueue.pop());
+            assertEquals(new Person("Bob", 30), popQueue.pop());
+            assertNull(popQueue.pop());
 
-        System.out.println(queue2.pop().age);
-        System.out.println(queue2.pop().age);
-        System.out.println(queue2.pop().age);
+        });
 
-
+        executor.shutdown();
+        executor.awaitTermination(1, TimeUnit.SECONDS);
     }
+
+    @Test
+    void pushAndPopConcurrentlyWithMultipleThreads() throws InterruptedException {
+        final QuickPopDataStructures<Person> popQueue = new QuickPopDataStructures<>(new PersonComparator());
+        final QuickPushDataStructures<Person> pushQueue = new QuickPushDataStructures<>(new PersonComparator());
+        final ExecutorService executor = Executors.newFixedThreadPool(4);
+
+        executor.execute(() -> {
+            pushQueue.push(new Person("Alice", 25));
+            pushQueue.push(new Person("Bob", 30));
+            pushQueue.push(new Person("Charlie", 20));
+            pushQueue.push(new Person("David", 35));
+            pushQueue.push(new Person("Eve", 22));
+        });
+
+        executor.execute(() -> {
+
+            assertEquals(new Person("Charlie", 20), popQueue.pop());
+            assertEquals(new Person("Eve", 22), popQueue.pop());
+
+        });
+
+        executor.execute(() -> {
+            assertEquals(new Person("Alice", 25), popQueue.pop());
+            assertEquals(new Person("Bob", 30), popQueue.pop());
+            assertEquals(new Person("David", 35), popQueue.pop());
+            assertNull(popQueue.pop());
+
+        });
+
+        executor.shutdown();
+        executor.awaitTermination(1, TimeUnit.SECONDS);
+    }
+
 
     class Person {
         private String name;
@@ -74,4 +111,5 @@ class QuickPopDataStructuresTest {
             return p1.getAge() - (p2.getAge());
         }
     }
+
 }

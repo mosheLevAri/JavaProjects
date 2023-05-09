@@ -1,25 +1,25 @@
 package il.co.lird.FS133.Projects.ZemingoProject;
 
 import java.util.Comparator;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.concurrent.Semaphore;
 
-public class QuickPushDataStructures<T> {
+public class QuickPushDataStructures<T> implements Iterable<T>, IQuickDataStructers<T>{
 
     private Node head = null;
     private final Comparator<T> comparator;
-    private final Object lockPop = new Object();
-    private final Object lockPush = new Object();
-    private final Semaphore semaphore = new Semaphore(0);
+    private final Object lock = new Object();
 
     public QuickPushDataStructures(Comparator<T> comparator) {
         this.comparator = Objects.requireNonNull(comparator);
     }
 
+    @Override
     public void push(T element) {
         Node newNode = new Node(element);
 
-        synchronized (lockPush) {
+        synchronized (lock) {
             if (head == null) {
                 head = newNode;
             }
@@ -29,23 +29,26 @@ public class QuickPushDataStructures<T> {
                 head.prev = newNode;
                 head = newNode;
             }
-
-            semaphore.release();
         }
     }
 
-    public T pop() throws InterruptedException {
+    @Override
+    public T pop() {
         T returnValue = null;
 
-        semaphore.acquire();
-        synchronized (lockPop) {
+        synchronized (lock) {
             Node max = findMaxValue();
             returnValue = max.data;
             removeNodeFromList(max);
         }
-
         return returnValue;
     }
+
+    @Override
+    public Iterator<T> iterator() {
+        return new IteratorImplemention();
+    }
+
 
     private class Node {
 
@@ -87,4 +90,33 @@ public class QuickPushDataStructures<T> {
         maxValue.next = null;
         maxValue.prev = null;
     }
+
+    private class IteratorImplemention implements Iterator<T> {
+
+        private Node currentNode = head;
+        private Node lastReturned = currentNode;
+
+        @Override
+        public boolean hasNext() {
+            return currentNode != null;
+        }
+
+        @Override
+        public T next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+
+            lastReturned = currentNode;
+            currentNode = currentNode.next;
+
+            return lastReturned.data;
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+    }
+
 }

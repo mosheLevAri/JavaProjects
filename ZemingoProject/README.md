@@ -51,5 +51,3 @@ This will output:
 ## Thread Safety
 The QuickPopDataStructures class is thread-safe. The push and pop methods are synchronized to ensure that only one thread can access the data structure at a time.
 
-## License
-This project is licensed under the MIT License.

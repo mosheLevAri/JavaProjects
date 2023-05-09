@@ -18,13 +18,13 @@ QuickPopDataStructures and QuickPushDataStructures is a thread-safe data structu
 To use the QuickPopDataStructures class, first create an instance with a comparator:
 
 
-```
+``` java
 QuickPopDataStructures<Integer> IntegerList = new QuickPopDataStructures<>(new IntegerComparator());
 
 ```
 
 Then, you can add elements to the data structure using the push method:
-```
+```java
 IntegerList.push(3);
 IntegerList.push(1);
 IntegerList.push(5);
@@ -32,18 +32,18 @@ IntegerList.push(5);
 
 You can retrieve the highest element in the data structure using the pop method:
 
-```
+```java
 int highest = IntegerList.pop(); // returns 5
 ```
 
 You can also iterate over the elements in the data structure using a for-each loop:
-```
+```java
 for (int element : IntegerList) {
     System.out.println(element);
 }
 ```
 This will output:
-```
+```java
 5
 3
 1
